@@ -1,0 +1,103 @@
+stevens <- read.csv('stevens.csv')
+
+library(data.table)
+stevens <- data.table(stevens)
+#View(stevens)
+
+library(caTools)
+set.seed(3000)
+
+spl = sample.split(stevens$Reverse, SplitRatio = .7)
+
+Train <- stevens[spl==TRUE,]
+Test <- stevens[spl == FALSE,]
+
+#Install and load rpart & rpart plot to make CART model
+#install.packages("rpart")
+library(rpart)
+
+#install.packages('rpart.plot')
+library(rpart.plot)
+
+StevensTree = rpart(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst, data = Train,
+                    method = 'class', minbucket = 25)
+
+#method = 'class' This tells rpart to build a classification tree instead of a regression tree
+prp(StevensTree)
+
+#Prediction
+PredictCart = predict(StevensTree, newdata = Test, type = 'class')
+
+#we can either add argument type = 'class' or general probabilities and use a threshold of say .5 as we do in log reg.
+
+#table(True_outcome_values, Predicted_value)
+table(Test$Reverse, PredictCart)
+
+#Accuracy of our model
+(41+71) / sum(table(Test$Reverse, PredictCart))
+
+#install.packages('ROCR')
+library(ROCR)
+
+#Generate predictions (skip type = 'class')
+PredictROC = predict(StevensTree, newdata = Test)
+head(PredictROC)
+
+#Use 2nd Column as our Prob. to generate our ROC Curve
+#prediction(Predicted_Prob, True_Prob_value). 
+
+pred = prediction(PredictROC[,2], Test$Reverse)
+class(pred)
+perf = performance(pred, "tpr", "fpr")
+plot(perf, colorize = TRUE, print.cutoffs.at = seq(0,1,0.1), text.adj = c(-.1, 2))
+
+#Applying Random Forest (Much More Computionally Intensive Cart)
+#install.packages('randomForest')
+library(randomForest)
+
+StevensForest = randomForest(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst, 
+                             data = Train, nodesize = 25, ntree = 200)
+
+# RandomForest Function doesn't have a method argument . So when we want to do a classification problem, 
+# we need to make sure outcome is a factor . Let's convert the variable Reverse to a factor variable 
+#in both our training set and testing sets 
+
+Train$Reverse = as.factor(Train$Reverse)
+Test$Reverse = as.factor(Test$Reverse)
+
+StevensForest = randomForest(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst,
+                             data = Train, nodsize = 25, ntree = 200)
+
+#We didn't get error this time so our model is ready to make prediction 
+
+PredictForest = predict(StevensForest, newdata = Test)
+table(Test$Reverse, PredictForest)
+#accuracy 
+(34+81) / sum(table(Test$Reverse, PredictForest))
+
+#Parameter Selection 
+#In the CART the value of "minbucket" parameter affect the model's out of sample accuracy.
+
+#install.packages('caret')
+library(caret)
+#install.packages('e1071')
+library(e1071)
+set.seed(3000)
+numFolds = trainControl(method = "cv", number = 10)
+#number define the folds of cv
+
+cpGrid = expand.grid(.cp = seq(.01, .07, .001))
+
+train(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst, data = Train,
+      method = 'rpart', trControl = numFolds, tuneGrid = cpGrid)
+
+#so the final value for cp is 0.44
+
+#lets create a new cart model with this value of cp 
+StevensTreeCV = rpart(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst,
+                      data = Train, method = 'class', cp = .44) #method = 'class' we are building classification tree
+PredictCV = predict(StevensTreeCV, newdata = Test, type = 'class')
+table(Test$Reverse, PredictCV)
+
+#Accuracy 
+93/(77+93)
