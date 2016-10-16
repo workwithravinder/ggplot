@@ -1,0 +1,67 @@
+library(data.table)
+DT = data.table(A = 1:5,
+                B = letters[1:5],
+                C = 6:10)
+class(DT)
+
+#Selecting first 4 rows
+DT[1:4,]
+
+#Selecting Columns 
+DT[,.(A)]
+
+#Selecting column as a vector 
+DT[,A]
+
+#Selcting mutliple columns
+DT[,.(B,C)]
+
+#Recyling in j
+DT[,.(B,C= sum(C))]
+
+#Throw anything in j 
+DT[,plot(A,C)]
+
+
+#Wrapping multiple expression within Curly braces
+DT[,{print(A)
+     hist(C)}] #Note only values are printed 
+
+#wrapping multiple expression within curly braces using NULL
+DT[,{print(A) 
+     hist(C) 
+     NULL}]
+
+#Performing on iris dataset
+DT = as.data.table(iris)
+DT[, .(Sepal.Length = median(Sepal.Length),
+         Sepal.Width = median(Sepal.Width),
+         Petal.Length = median(Petal.Length),
+         Petal.Width = median(Petal.Width)),
+     by = .(Species)]
+
+#The above process will comsume more time if we have very large number of columns say 100
+#So how to reduce the programming time 
+# .SD 
+DT[,lapply(.SD, median), by = Species]
+
+DT = DT[1:5,]
+DT
+DT[,paste0("Sepal",1:4):= NULL]
+DT
+?paste0
+paste0(1:4)
+paste("S",1:4)
+paste0("S",1:4)
+DT
+colnames(DT) <-c("S1","S2","S3","S4","S5")
+DT
+DT[,paste0("S",1:4) := NULL]
+
+DT[,S1 := 1:5]
+DT[order(-S1)]
+DT[,":="(s2 = 6:10,
+         s3 = 1)]
+DT = data.table(x = c(2, 2, 1, 1, 1), y = 6:10)
+DT[2:4, z := sum(y), by = x]
+DT[2:4, .(Z = sum(y)), by = x]
