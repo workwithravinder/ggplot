@@ -88,16 +88,19 @@ numFolds = trainControl(method = "cv", number = 10)
 
 cpGrid = expand.grid(.cp = seq(.01, .07, .001))
 
-train(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst, data = Train,
+r = train(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst, data = Train,
       method = 'rpart', trControl = numFolds, tuneGrid = cpGrid)
-
-#so the final value for cp is 0.44
+head(r)
+plot(r$resuts$Accuracy,r$results$cp) 
+plot(r$results$Accuracy, r$results$cp)
+#so the final value for cp is 0.016
 
 #lets create a new cart model with this value of cp 
+set.seed(3000)
 StevensTreeCV = rpart(Reverse ~ Circuit + Issue + Petitioner + Respondent + LowerCourt + Unconst,
-                      data = Train, method = 'class', cp = .44) #method = 'class' we are building classification tree
+                      data = Train, method = 'class', cp = .016) #method = 'class' we are building classification tree
 PredictCV = predict(StevensTreeCV, newdata = Test, type = 'class')
 table(Test$Reverse, PredictCV)
 
 #Accuracy 
-93/(77+93)
+(40+71)/(40+37+22+71)
