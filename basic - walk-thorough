@@ -1,0 +1,90 @@
+#Reading xlsx file 
+library("xlsx")
+data = read.xlsx('datafile.xlsx',1)
+
+#reading older file 
+install.packages('gdata')
+library('gdata')
+data = read.xls('datafile.xls')
+
+#with sheetIndex 
+data = read.xlsx('datafile.xls', sheetIndex =2)
+
+data = read.xlsx('datafile.xls', sheetName = 'Revenues')
+
+#with read.xls
+data = read.xls('datafile.xls',sheet = 2)
+
+#Plotting with ggplot 
+plot(mtcars$wt, mtcars$mpg)
+
+library(ggplot2)
+qplot(mtcars$wt, mtcars$mpg)
+
+#if the two vectors are already in the same data frame, you can use the following syntax:
+qplot(wt, mpg, data = mtcars)
+
+# This is equivalent to: ggplot(mtcars, aes(x=wt, y=mpg)) + geom_point() 
+
+#Line Graph 
+plot(pressure$temperature, pressure$pressure, type = 'l')
+
+#using ggplot - qplot
+qplot(pressure$temperature, pressure$pressure, geom = c('line','point'))
+
+ggplot(pressure, aes(x = temperature, y = pressure)) + geom_line() + geom_point()
+
+#Creating a bar Graph 
+barplot(BOD$demand, names.arg = BOD$Time)
+
+barplot(table(mtcars$cyl))
+
+#barplot using ggplot
+qplot(BOD$Time, BOD$demand, geom = 'bar', stat = 'identity')
+
+ggplot(BOD, aes(x = Time, y = demand)) + geom_bar(stat = 'identity')
+
+qplot(factor(cyl), data = mtcars)
+qplot(cyl, data = mtcars)
+
+ggplot(mtcars, aes(x = cyl)) + geom_bar()
+ggplot(mtcars, aes( x = factor(cyl))) + geom_bar()
+
+#Creating Histogram
+hist(mtcars$mpg, breaks = 100)
+
+#using ggplot 
+qplot(mtcars$mpg)
+
+qplot(mpg, data = mtcars, binwidth = 4)
+ggplot(data = mtcars, aes(x = mpg)) + geom_histogram(binwidth = .4 )
+
+
+#Creating boxplot 
+plot(ToothGrowth$supp, ToothGrowth$len)
+
+boxplot(len ~ supp, data = ToothGrowth)
+boxplot(len ~ supp + dose, data = ToothGrowth)
+
+#Boxplot using ggplot
+qplot(ToothGrowth$supp, ToothGrowth$len, geom = 'boxplot')
+qplot(x = interaction(ToothGrowth$supp, ToothGrowth$dose), y = ToothGrowth$len, geom = 'boxplot')
+
+ggplot(data = ToothGrowth, aes(x = supp, y = len)) + geom_boxplot()
+
+ggplot(data = ToothGrowth, aes(x = interaction(supp, dose), y = len)) + geom_boxplot()
+
+
+#Plotting a curve function
+curve(x^3- 5*x , from = -4, to = 4)
+
+#Plotting a user-defined function
+myfun <- function(xvar) {
+   1/(1+exp(-xvar + 10))
+}
+
+curve(myfun, from = 0, to = 20)
+
+#qplot(c(0,20), fun = myfun, stat = 'function', geom = 'line')
+
+ggplot(data.frame(x = c(0,20)), aes(x = x)) + stat_function(fun = myfun, geom = 'line')
