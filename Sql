@@ -1,0 +1,8 @@
+library(RMySQL)
+mydb = dbConnect(MySQL(), user = 'root', password = '9355613625',dbname = 'personal_schema')
+dbListTables(mydb)
+dbListFields(mydb, 'customers')
+
+rs = dbSendQuery(mydb, 'SELECT *FROM Customers')
+rs
+data = fetch(rs, n = -1)
