@@ -1,0 +1,23 @@
+# Creating data
+time_index <- seq(from = as.POSIXct("2016-03-01 24:00"), 
+                  to = as.POSIXct("2016-05-31 00:00"), by = "hour")
+
+time <- format(time_index, "%H")
+
+value <- c(1:2161)
+
+month <- format(time_index, "%b") #extacting month  
+df <- data.frame(time_index, time, month, value) #Making data frame 
+
+#Aggregating values according to time and month 
+mydata <-aggregate(df$value, by = list(df$time, df$month), FUN = sum)
+names(mydata) <- c("time","Month","value")
+
+
+mydata$time <- strptime(mydata$time, "%H:%M:%S")
+mydata$time <- format(mydata$time, "%H")
+
+#ggplot(mydata, aes(x = Month, y = value)) + geom_point() + facet_wrap(~ time, nrow = 6) + geom_line()
+ggplot(mydata, aes(x = Month, y = value)) + geom_line(position = position_dodge(.2), aes(group = mydata$Month)) + facet_wrap(~ time, nrow = 6) 
+
+#ggplot(df, aes(x = month, y = value)) + geom_point() + facet_grid(. ~ time) 
